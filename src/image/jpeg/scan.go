@@ -310,6 +310,15 @@ func (d *decoder) processSOS(n int) error {
 				if err := d.readFull(d.tmp[:2]); err != nil {
 					return err
 				}
+				
+				// detect the presence of a stuffed 0xff00 pair caused by byte alignment before RST marker
+				if d.tmp[0] == 0xff && d.tmp[1] == 0x00 {
+					if err := d.readFull(d.tmp[:2]); err != nil {
+						return err
+					}
+				}
+
+				
 				if d.tmp[0] != 0xff || d.tmp[1] != expectedRST {
 					return FormatError("bad RST marker")
 				}
